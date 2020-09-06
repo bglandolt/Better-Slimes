@@ -108,6 +108,7 @@ public class RegistryHandler {
 			KingSlime k = (KingSlime) event.getEntity();
 			System.out.println("King Slime spawned");
 
+			/*
 			List<EntityPlayer> players = k.world.playerEntities;
 
 			for (EntityPlayer p : players) {
@@ -116,6 +117,7 @@ public class RegistryHandler {
 							TextFormatting.GREEN + "The King Slime has been summoned near a random player."));
 				p.playSound(SoundEvents.AMBIENT_CAVE, 2.5F, 1.0F);
 			}
+			*/
 
 			k.setSlimeSize(9, true);
 			k.setAttackModifier(1);
