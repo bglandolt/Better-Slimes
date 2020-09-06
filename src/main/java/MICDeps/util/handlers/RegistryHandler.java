@@ -73,6 +73,7 @@ public class RegistryHandler {
 		// }
 	}
 
+	/*
 	@SubscribeEvent
 	public void WorldTickEvent(WorldTickEvent event) {
 		if (event.world.getTotalWorldTime() > 24000) {
@@ -100,6 +101,7 @@ public class RegistryHandler {
 		}
 
 	}
+	*/
 
 	@SubscribeEvent
 	public void onEntityJoinWorld(EntityJoinWorldEvent event) {
