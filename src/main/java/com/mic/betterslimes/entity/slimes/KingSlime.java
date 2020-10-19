@@ -39,6 +39,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.List;
 
+import static MICDeps.util.handlers.ConfigHandler.config;
 import static com.mic.betterslimes.BetterSlimes.MODID;
 
 public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
@@ -47,48 +48,91 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             BossInfo.Color.BLUE, BossInfo.Overlay.PROGRESS));
     private static final DataParameter<Integer> SPAWN_TIME = EntityDataManager.<Integer>createKey(KingSlime.class,
             DataSerializers.VARINT);
+    public static final String NAME = "KingSlime";
+    public static final int MAX = Short.MAX_VALUE;
 
     protected boolean explode = false;
-    private static float explodeDamage = 18.0f;
+    public static float explodeDamage = 18.0f;
+    public static int explodeRange = 32;
 
     Integer targetLastPosX = null;
     Integer targetLastPosZ = null;
 
     // Time in ticks between leaps
-    private int leapCooldown = 160;
+    public static int leapCooldown;
     // Time in ticks the boss takaes to charge up his leap attack
-    private int leapWarning = 40;
+    public static int leapWarning;
 
+    public static float leapVelocityMultiplierY;
+    public static float leapVelocityMultiplierXZ;
 
-    private float leapVelocityMultiplierY = 1.0F;
-    private float leapVelocityMultiplierXZ = 1.0F;
+    public static float movementSpeedMultiplier;
+    public static int size = 7;
 
     private int timeSinceIgnited = 0;
     private int fuseTime = 30;
     private int combatTimer = 2;
-    public int bossTimer = 160;
 
+    public int bossTimer = 160;
+    private double movementSpeedAttribute;
+    public static boolean configLoaded = false;
+    private boolean nbtSet = false;
+
+    public static void initConfig() {
+        config.addCustomCategoryComment(NAME, "Configuration options for the King Slime boss");
+        leapCooldown = config.getInt(NAME, "leapCooldown", 160, 0, MAX, "Cooldown between leap attacks in ticks");
+        leapWarning = config.getInt(NAME, "leapWarning", 40, 0, MAX, "Length of the animation the boss does before leap attacks in ticks. \nMust be longer than leapCooldown");
+
+        leapVelocityMultiplierY = config.getFloat(NAME, "leapVelocityMultiplierY", 1.0F, 0, MAX, "Vertical speed all entities affected by the leap attack get");
+        leapVelocityMultiplierXZ = config.getFloat(NAME, "leapVelocityMultiplierXZ", 1.0F, 0, MAX, "Horizontal speed all entities affected by the leap attack get");
+
+        explodeDamage = config.getFloat(NAME, "explodeDamage", 18.0F, 0, MAX, "Damage the leap attack deals");
+        explodeRange = config.getInt(NAME, "explodeDamage", 32, 0, MAX, "Damage the leap attack deals");
+        movementSpeedMultiplier = config.getFloat(NAME, "movementSpeedMultiplier", 1.0F, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
+
+        size = config.getInt(NAME, "movementSpeedMultiplier", 7, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
+
+        configLoaded = true;
+    }
 
     public KingSlime(World worldIn) {
         super(worldIn);
         this.setAttackModifier(1);
         this.setHealthModifier(26);
-        this.setSlimeSize(7, true);
+        this.setSlimeSize(size, true);
 
         this.timeSinceIgnited = 0;
         this.fuseTime = 30;
         this.dataManager.register(STATE, Integer.valueOf(-1));
         this.setCreeperState(-1);
 
+        this.movementSpeedAttribute = 0.1 * movementSpeedMultiplier;
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.movementSpeedAttribute);
+
         // Needed for event handling
         MinecraftForge.EVENT_BUS.register(this);
     }
 
+
+//    public void readEntityFromNBT(NBTTagCompound compound)
+//    {
+//        super.readEntityFromNBT(compound);
+//
+////        if (compound.getBoolean("IsBaby"))
+////        {
+////            this.setChild(true);
+////        }
+////
+////        this.setBreakDoorsAItask(compound.getBoolean("CanBreakDoors"));
+//    }
+
     // Needed for the creeper state
     private static final DataParameter<Integer> STATE = EntityDataManager.<Integer>createKey(KingSlime.class, DataSerializers.VARINT);
+
     public int getCreeperState() {
         return ((Integer) this.dataManager.get(STATE)).intValue();
     }
+
     public void setCreeperState(int state) {
         this.dataManager.set(STATE, Integer.valueOf(state));
     }
@@ -107,11 +151,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         this.dataManager.set(SPAWN_TIME, Integer.valueOf(time));
     }
 
-    public void writeEntityToNBT(NBTTagCompound compound) {
-        super.writeEntityToNBT(compound);
-        compound.setInteger("Spawn", this.getSpawnTime());
-    }
-
     @Override
     protected void updateAITasks() {
         if (this.getSpawnTime() > 0) {
@@ -119,17 +158,17 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
             if (j1 <= 0) {
                 this.playSound(this.getSquishSound(), (float) (this.getSoundVolume() * 1.2), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
-                for (int x = 0; x < 10; x++)
-                    world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
-//				this.world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.posY, this.posZ, 0, 0, 0);
-                KnightSlime b;
-                for (int x = 0; x < 4; x++) {
-                    b = new KnightSlime(this.world);
-                    b.setSlimeSize(2, true);
-                    b.setLocationAndAngles(this.posX + rand.nextInt(10) - 5, this.posY + rand.nextInt(1) + 1,
-                            this.posZ + rand.nextInt(10) - 5, this.rotationYaw, this.rotationPitch);
-                    this.world.spawnEntity(b);
-                }
+//                for (int x = 0; x < 10; x++)
+//                    world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
+////				this.world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.posY, this.posZ, 0, 0, 0);
+//                KnightSlime b;
+//                for (int x = 0; x < 4; x++) {
+//                    b = new KnightSlime(this.world);
+//                    b.setSlimeSize(2, true);
+//                    b.setLocationAndAngles(this.posX + rand.nextInt(10) - 5, this.posY + rand.nextInt(1) + 1,
+//                            this.posZ + rand.nextInt(10) - 5, this.rotationYaw, this.rotationPitch);
+//                    this.world.spawnEntity(b);
+//                }
             }
 
             this.setSpawnTime(j1);
@@ -152,11 +191,33 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         this.bossInfo.setName(this.getDisplayName());
     }
 
+    public void writeEntityToNBT(NBTTagCompound compound) {
+        super.writeEntityToNBT(compound);
+        if (configLoaded) {
+            compound.setInteger("Spawn", this.getSpawnTime());
+            compound.setInteger("leapCooldown", leapCooldown);
+            compound.setInteger("leapWarning", leapWarning);
+            compound.setFloat("leapVelocityMultiplierY", leapVelocityMultiplierY);
+            compound.setFloat("leapVelocityMultiplierXZ", leapVelocityMultiplierXZ);
+            compound.setFloat("explodeDamage", explodeDamage);
+            compound.setInteger("explodeRange", explodeRange);
+            nbtSet = true;
+        }
+    }
+
     public void readEntityFromNBT(NBTTagCompound compound) {
         super.readEntityFromNBT(compound);
         this.setSpawnTime(compound.getInteger("Spawn"));
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
+        }
+        if (configLoaded  && nbtSet) {
+            leapCooldown = compound.getInteger("leapCooldown");
+            leapWarning = compound.getInteger("leapWarning");
+            leapVelocityMultiplierY = compound.getFloat("leapVelocityMultiplierY");
+            leapVelocityMultiplierXZ = compound.getFloat("leapVelocityMultiplierXZ");
+            explodeDamage = compound.getFloat("explodeDamage");
+            explodeRange = compound.getInteger("explodeRange");
         }
     }
 
@@ -226,7 +287,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         this.targetLastPosX = null;
         this.targetLastPosZ = null;
 
-        List<EntityLivingBase> e = this.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(this.getPosition()).grow(64, 32, 64), new Predicate<EntityLivingBase>() {
+        List<EntityLivingBase> e = this.world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(this.getPosition()).grow(explodeRange, 32, explodeRange), new Predicate<EntityLivingBase>() {
             public boolean apply(@Nullable EntityLivingBase entity) {
                 return true;
             }
@@ -258,7 +319,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         // decrement the boss timer
         if (this.bossTimer > 0) {
             this.bossTimer--;
-            System.out.println(bossTimer);
         }
 
         // when the boss timer equals 40, capture that entity's last position
@@ -268,8 +328,8 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
                 this.targetLastPosZ = (int) leapTarget.posZ;
 //                this.playSound(SoundEvents.ENTITY_SPIDER_AMBIENT, 2.0F, 1.2F);
                 this.playSound(SoundEvents.ENTITY_CREEPER_PRIMED, 2.0F, 0.8F);
-				this.setCreeperState(1);
-            } else if (bossTimer < leapCooldown){
+                this.setCreeperState(1);
+            } else if (bossTimer < leapCooldown) {
                 // If the target is 24 blocks away, reset the cooldown
                 bossTimer++;
             }
@@ -279,7 +339,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         if (this.bossTimer <= leapWarning && this.bossTimer > 0) {
             this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.0D);
         } else {
-            this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(1.0D);
+            this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.movementSpeedAttribute);
         }
 
         // if the boss ability is ready, and boss is on the ground
@@ -349,7 +409,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             bossAbility(this.getAttackTarget());
         } else {
             this.bossTimer = leapCooldown;
-            this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(1.0D);
+            this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(this.movementSpeedAttribute);
         }
     }
 
