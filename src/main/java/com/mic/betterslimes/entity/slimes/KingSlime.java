@@ -113,19 +113,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-
-//    public void readEntityFromNBT(NBTTagCompound compound)
-//    {
-//        super.readEntityFromNBT(compound);
-//
-////        if (compound.getBoolean("IsBaby"))
-////        {
-////            this.setChild(true);
-////        }
-////
-////        this.setBreakDoorsAItask(compound.getBoolean("CanBreakDoors"));
-//    }
-
     // Needed for the creeper state
     private static final DataParameter<Integer> STATE = EntityDataManager.<Integer>createKey(KingSlime.class, DataSerializers.VARINT);
 
@@ -158,17 +145,17 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
             if (j1 <= 0) {
                 this.playSound(this.getSquishSound(), (float) (this.getSoundVolume() * 1.2), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
-//                for (int x = 0; x < 10; x++)
-//                    world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
-////				this.world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.posY, this.posZ, 0, 0, 0);
-//                KnightSlime b;
-//                for (int x = 0; x < 4; x++) {
-//                    b = new KnightSlime(this.world);
-//                    b.setSlimeSize(2, true);
-//                    b.setLocationAndAngles(this.posX + rand.nextInt(10) - 5, this.posY + rand.nextInt(1) + 1,
-//                            this.posZ + rand.nextInt(10) - 5, this.rotationYaw, this.rotationPitch);
-//                    this.world.spawnEntity(b);
-//                }
+                for (int x = 0; x < 10; x++)
+                    world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
+//				this.world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.posY, this.posZ, 0, 0, 0);
+                KnightSlime b;
+                for (int x = 0; x < 4; x++) {
+                    b = new KnightSlime(this.world);
+                    b.setSlimeSize(2, true);
+                    b.setLocationAndAngles(this.posX + rand.nextInt(10) - 5, this.posY + rand.nextInt(1) + 1,
+                            this.posZ + rand.nextInt(10) - 5, this.rotationYaw, this.rotationPitch);
+                    this.world.spawnEntity(b);
+                }
             }
 
             this.setSpawnTime(j1);
