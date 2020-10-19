@@ -51,14 +51,23 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
     protected boolean explode = false;
     private static float explodeDamage = 18.0f;
 
-    private int lastActiveTime = 0;
+    Integer targetLastPosX = null;
+    Integer targetLastPosZ = null;
+
+    // Time in ticks between leaps
+    private int leapCooldown = 160;
+    // Time in ticks the boss takaes to charge up his leap attack
+    private int leapWarning = 40;
+
+
+    private float leapVelocityMultiplierY = 1.0F;
+    private float leapVelocityMultiplierXZ = 1.0F;
+
     private int timeSinceIgnited = 0;
     private int fuseTime = 30;
     private int combatTimer = 2;
     public int bossTimer = 160;
 
-    Integer targetLastPosX = null;
-    Integer targetLastPosZ = null;
 
     public KingSlime(World worldIn) {
         super(worldIn);
@@ -66,10 +75,8 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         this.setHealthModifier(26);
         this.setSlimeSize(7, true);
 
-        this.lastActiveTime = 0;
         this.timeSinceIgnited = 0;
         this.fuseTime = 30;
-        this.experienceValue = 400;
         this.dataManager.register(STATE, Integer.valueOf(-1));
         this.setCreeperState(-1);
 
@@ -170,9 +177,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             return false;
         } else {
             if (this.world.getDifficulty() != EnumDifficulty.PEACEFUL) {
-
                 return true;
-
             }
 
             return false;
@@ -231,16 +236,9 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             double dist = this.getDistanceSq(entity) + 1;
 
             if (entity != this && dist < 512) {
-
-//				if ( entity.getName().equals("Spider") || entity.getName() == "Cave_Spider") 26
-//				{
-//					this.deadSpidersCreateWebs(entity);
-//					entity.setDead();
-//				}
-//				else
                 {
                     entity.setPositionAndUpdate(entity.posX, entity.posY + 1.5, entity.posZ);
-                    entity.addVelocity((0.8 / (entity.posX - this.posX)), MathHelper.clamp(32 / (dist), 1, 16), 0.8 / (entity.posZ - this.posZ)); //-entity.getDistanceSq(this)/(entity.getDistanceSq(this)+1)
+                    entity.addVelocity((0.8 / (entity.posX - this.posX)) * leapVelocityMultiplierXZ, MathHelper.clamp(32 / (dist) * leapVelocityMultiplierY, 1, 16), 0.8 / (entity.posZ - this.posZ) * leapVelocityMultiplierXZ);
                     entity.velocityChanged = true;
                     entity.attackEntityFrom(DamageSource.GENERIC, (float) ((this.explodeDamage / (dist + 1))));
                     entity.setLastAttackedEntity(this);
@@ -260,24 +258,25 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         // decrement the boss timer
         if (this.bossTimer > 0) {
             this.bossTimer--;
+            System.out.println(bossTimer);
         }
 
         // when the boss timer equals 40, capture that entity's last position
-        if (this.bossTimer == 40) {
+        if (this.bossTimer == leapWarning) {
             if (dist < 516) {
                 this.targetLastPosX = (int) leapTarget.posX;
                 this.targetLastPosZ = (int) leapTarget.posZ;
-                this.playSound(SoundEvents.ENTITY_SPIDER_AMBIENT, 2.0F, 1.2F);
+//                this.playSound(SoundEvents.ENTITY_SPIDER_AMBIENT, 2.0F, 1.2F);
                 this.playSound(SoundEvents.ENTITY_CREEPER_PRIMED, 2.0F, 0.8F);
 				this.setCreeperState(1);
-                //triggerBossAbilitySpiders();
-            } else {
-                this.bossTimer++;
+            } else if (bossTimer < leapCooldown){
+                // If the target is 24 blocks away, reset the cooldown
+                bossTimer++;
             }
         }
         // when the boss timer below 40 and greater than 0, stop
         // moving capture and look at that entity's last position
-        if (this.bossTimer <= 40 && this.bossTimer > 0) {
+        if (this.bossTimer <= leapWarning && this.bossTimer > 0) {
             this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.0D);
         } else {
             this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(1.0D);
@@ -287,11 +286,10 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         if (this.bossTimer < 1) //&& !this.isClearWebsReady )
         {
             this.leap(leapTarget);
-            this.bossTimer = 160; //this.getRNG().nextInt(50);
+            this.bossTimer = leapCooldown; //this.getRNG().nextInt(50);
 
             // Wait 2 ticks so the boss doesn't explode immediately after leaping
             this.combatTimer = 2;
-            this.lastActiveTime = 0;
             this.timeSinceIgnited = 0;
             this.fuseTime = 30;
             this.setCreeperState(-1);
@@ -301,9 +299,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
     public void onUpdate() {
         if (this.isEntityAlive()) {
-            this.lastActiveTime = this.timeSinceIgnited;
-
-            if (this.bossTimer <= 40) {
+            if (this.bossTimer <= leapWarning) {
                 this.setCreeperState(1);
             }
 
@@ -352,7 +348,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         if (this.getAttackTarget() != null) {
             bossAbility(this.getAttackTarget());
         } else {
-            this.bossTimer = 100;
+            this.bossTimer = leapCooldown;
             this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(1.0D);
         }
     }
