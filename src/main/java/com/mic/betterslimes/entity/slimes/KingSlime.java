@@ -76,7 +76,12 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
     public int bossTimer = 160;
     private double movementSpeedAttribute;
     public static boolean configLoaded = false;
+
+    public static boolean spawnMinions;
+
+    // Used to check if entity NBT data has been set yet
     private boolean nbtSet = false;
+
 
     public static void initConfig() {
         config.addCustomCategoryComment(NAME, "Configuration options for the King Slime boss");
@@ -91,6 +96,8 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         movementSpeedMultiplier = config.getFloat(NAME, "movementSpeedMultiplier", 1.0F, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
 
         size = config.getInt(NAME, "movementSpeedMultiplier", 7, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
+
+        spawnMinions = config.getBoolean(NAME, "spawnMinions", true, "Ability of the boss to summon little slaves to aid him in battle");
 
         configLoaded = true;
     }
@@ -143,7 +150,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         if (this.getSpawnTime() > 0) {
             int j1 = this.getSpawnTime() - 1;
 
-            if (j1 <= 0) {
+            if (spawnMinions && j1 <= 0) {
                 this.playSound(this.getSquishSound(), (float) (this.getSoundVolume() * 1.2), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
                 for (int x = 0; x < 10; x++)
                     world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
@@ -188,6 +195,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             compound.setFloat("leapVelocityMultiplierXZ", leapVelocityMultiplierXZ);
             compound.setFloat("explodeDamage", explodeDamage);
             compound.setInteger("explodeRange", explodeRange);
+            compound.setBoolean("spawnMinions", spawnMinions);
             nbtSet = true;
         }
     }
@@ -205,6 +213,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             leapVelocityMultiplierXZ = compound.getFloat("leapVelocityMultiplierXZ");
             explodeDamage = compound.getFloat("explodeDamage");
             explodeRange = compound.getInteger("explodeRange");
+            spawnMinions = compound.getBoolean("spawnMinions");
         }
     }
 
