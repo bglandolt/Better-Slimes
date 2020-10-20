@@ -8,9 +8,11 @@ import com.mic.betterslimes.entity.EntityBetterSlime;
 import com.mic.betterslimes.entity.ISpecialSlime;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.boss.EntityWither;
+import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.SoundEvents;
@@ -36,6 +38,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.List;
 
@@ -65,7 +68,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
     public static float leapVelocityMultiplierY;
     public static float leapVelocityMultiplierXZ;
-
     public static float movementSpeedMultiplier;
     public static int size = 7;
 
@@ -79,9 +81,9 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
     public static boolean spawnMinions;
 
-    // Used to check if entity NBT data has been set yet
-    private boolean nbtSet = false;
+    public static String splitSlimeString;
 
+    protected Class<? extends Entity> SplitSlime;
 
     public static void initConfig() {
         config.addCustomCategoryComment(NAME, "Configuration options for the King Slime boss");
@@ -97,7 +99,9 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
         size = config.getInt(NAME, "movementSpeedMultiplier", 7, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
 
-        spawnMinions = config.getBoolean(NAME, "spawnMinions", true, "Ability of the boss to summon little slaves to aid him in battle");
+        spawnMinions = config.getBoolean(NAME, "spawnMinions", false, "Ability of the boss to summon little slaves to aid him in battle");
+
+        splitSlimeString = config.getString(NAME, "slimeChildren", "null:blue_slime", "The type of slime the boss will split into on death\n Must be a BetterSlimes slime");
 
         configLoaded = true;
     }
@@ -118,6 +122,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
         // Needed for event handling
         MinecraftForge.EVENT_BUS.register(this);
+        SplitSlime = EntityList.getClassFromName(splitSlimeString);
     }
 
     // Needed for the creeper state
@@ -196,7 +201,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             compound.setFloat("explodeDamage", explodeDamage);
             compound.setInteger("explodeRange", explodeRange);
             compound.setBoolean("spawnMinions", spawnMinions);
-            nbtSet = true;
         }
     }
 
@@ -206,7 +210,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
         if (this.hasCustomName()) {
             this.bossInfo.setName(this.getDisplayName());
         }
-        if (configLoaded  && nbtSet) {
+        if (configLoaded  && compound.hasKey("spawnMinions")) {
             leapCooldown = compound.getInteger("leapCooldown");
             leapWarning = compound.getInteger("leapWarning");
             leapVelocityMultiplierY = compound.getFloat("leapVelocityMultiplierY");
@@ -224,7 +228,11 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
     @Override
     protected EntityBetterSlime createInstance() {
-        return new BlueSlime(this.world);
+        if (EntityBetterSlime.class.isAssignableFrom(SplitSlime)) {
+            return (EntityBetterSlime)ForgeRegistries.ENTITIES.getValue(new ResourceLocation(splitSlimeString)).newInstance(this.world);
+        } else {
+            return new BlueSlime(this.world);
+        }
     }
 
     @Override
