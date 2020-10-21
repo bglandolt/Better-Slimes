@@ -3,6 +3,7 @@ package MICDeps.util.handlers;
 import java.io.File;
 
 import MICDeps.ModBase;
+import com.mic.betterslimes.entity.slimes.KingSlime;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
@@ -62,7 +63,8 @@ public class ConfigHandler {
 		goldSlime = config.getInt("Gold Slime Spawn Chance", category, 20, 0, 100, "0 for never and 100 for always.");
 		knightSlime = config.getInt("Knight Slime Spawn Chance", category, 6, 0, 100, "0 for never and 100 for always.");
 
-		
+		KingSlime.initConfig();
+
 		config.save();
 
 	}
