@@ -206,18 +206,26 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
     public void readEntityFromNBT(NBTTagCompound compound) {
         super.readEntityFromNBT(compound);
-        this.setSpawnTime(compound.getInteger("Spawn"));
-        if (this.hasCustomName()) {
+        if (this.hasCustomName())
             this.bossInfo.setName(this.getDisplayName());
-        }
-        if (configLoaded  && compound.hasKey("spawnMinions")) {
-            leapCooldown = compound.getInteger("leapCooldown");
-            leapWarning = compound.getInteger("leapWarning");
-            leapVelocityMultiplierY = compound.getFloat("leapVelocityMultiplierY");
-            leapVelocityMultiplierXZ = compound.getFloat("leapVelocityMultiplierXZ");
-            explodeDamage = compound.getFloat("explodeDamage");
-            explodeRange = compound.getInteger("explodeRange");
-            spawnMinions = compound.getBoolean("spawnMinions");
+        
+        if (compound.hasKey("Spawn"))
+            this.setSpawnTime(compound.getInteger("Spawn"));
+        if (configLoaded) {
+            if (compound.hasKey("leapCooldown"))
+                leapCooldown = compound.getInteger("leapCooldown");
+            if (compound.hasKey("leapWarning"))
+                leapWarning = compound.getInteger("leapWarning");
+            if (compound.hasKey("leapVelocityMultiplierY"))
+                leapVelocityMultiplierY = compound.getFloat("leapVelocityMultiplierY");
+            if (compound.hasKey("leapVelocityMultiplierXZ"))
+                leapVelocityMultiplierXZ = compound.getFloat("leapVelocityMultiplierXZ");
+            if (compound.hasKey("explodeDamage"))
+                explodeDamage = compound.getFloat("explodeDamage");
+            if (compound.hasKey("explodeRange"))
+                explodeRange = compound.getInteger("explodeRange");
+            if (compound.hasKey("spawnMinions"))
+                spawnMinions = compound.getBoolean("spawnMinions");
         }
     }
 
