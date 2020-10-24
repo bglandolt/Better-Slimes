@@ -158,7 +158,6 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             int j1 = this.getSpawnTime() - 1;
 
             if (spawnMinions && j1 <= 0) {
-                System.out.println("\nspawn\n");
                 this.playSound(this.getSquishSound(), (float) (this.getSoundVolume() * 1.2), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
                 for (int x = 0; x < 10; x++)
                     world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
