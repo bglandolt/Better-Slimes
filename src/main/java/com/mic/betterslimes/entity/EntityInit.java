@@ -1,5 +1,6 @@
 package com.mic.betterslimes.entity;
 
+import com.mic.betterslimes.BetterSlimes;
 import com.mic.betterslimes.entity.slimes.*;
 
 import MICDeps.ModBase;
@@ -14,13 +15,10 @@ import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class EntityInit {
-	static ModBase mod;
-	static String modID;
+	public static ModBase mod = BetterSlimes.instance;
+	public static String modID = BetterSlimes.MODID;
 
-	public EntityInit(ModBase mod, String modId) {
-		this.mod = mod;
-		this.modID = modId;
-	}
+	public EntityInit() {}
 
 	private static void registerEntity(String name, Class<? extends Entity> entity, int ID, int range, int colorOne,
 			int colorTwo) {

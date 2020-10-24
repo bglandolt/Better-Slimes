@@ -47,6 +47,8 @@ import static com.mic.betterslimes.BetterSlimes.MODID;
 
 public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
+    public static final String MODID = BetterSlimes.MODID;
+
     private final BossInfoServer bossInfo = (BossInfoServer) (new BossInfoServer(this.getDisplayName(),
             BossInfo.Color.BLUE, BossInfo.Overlay.PROGRESS));
     private static final DataParameter<Integer> SPAWN_TIME = EntityDataManager.<Integer>createKey(KingSlime.class,
@@ -95,13 +97,13 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
 
         explodeDamage = config.getFloat(NAME, "explodeDamage", 18.0F, 0, MAX, "Damage the leap attack deals");
         explodeRange = config.getInt(NAME, "explodeDamage", 32, 0, MAX, "Damage the leap attack deals");
-        movementSpeedMultiplier = config.getFloat(NAME, "movementSpeedMultiplier", 1.0F, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
+        movementSpeedMultiplier = config.getFloat(NAME, "movementSpeedMultiplier", 1.0F, 0, MAX, "Amount by which the movement speed of " + NAME + " is multiplied");
 
         size = config.getInt(NAME, "movementSpeedMultiplier", 7, 0, MAX, "Amount by which the movement speed of " + NAME + "is multiplied");
 
         spawnMinions = config.getBoolean(NAME, "spawnMinions", false, "Ability of the boss to summon little slaves to aid him in battle");
 
-        splitSlimeString = config.getString(NAME, "slimeChildren", "null:blue_slime", "The type of slime the boss will split into on death\n Must be a BetterSlimes slime");
+        splitSlimeString = config.getString(NAME, "slimeChildren",  MODID + ":blue_slime", "The type of slime the boss will split into on death\n Must be a BetterSlimes slime");
 
         configLoaded = true;
     }
@@ -156,6 +158,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             int j1 = this.getSpawnTime() - 1;
 
             if (spawnMinions && j1 <= 0) {
+                System.out.println("\nspawn\n");
                 this.playSound(this.getSquishSound(), (float) (this.getSoundVolume() * 1.2), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
                 for (int x = 0; x < 10; x++)
                     world.spawnParticle(EnumParticleTypes.SLIME, this.posX, this.getEntityBoundingBox().minY, this.posY, 0.0D, 0.0D, 0.0D);
@@ -285,7 +288,7 @@ public class KingSlime extends EntityBetterSlime implements ISpecialSlime {
             d0 = 0; //leapTarget.posX - this.posX;
             d1 = 0; //leapTarget.posZ - this.posZ;
         }
-        this.playSound(SoundEvents.BLOCK_CLOTH_PLACE, 2.0F, 0.3F);
+            this.playSound(SoundEvents.BLOCK_CLOTH_PLACE, 2.0F, 0.3F);
         this.playSound(SoundEvents.BLOCK_SAND_FALL, 2.0F, 0.8F);
         this.setPositionAndUpdate(this.posX, this.posY + 2, this.posZ);
         if (!this.world.isRemote) this.addVelocity(d0 / 6, 2, d1 / 6);
