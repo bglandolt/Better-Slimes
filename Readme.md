@@ -12,5 +12,10 @@ Changes from the original project:
 
 - King Slime no longer spawns around the player.
 
+- Fixed the way entities are registered
+
+- Added Slime Boss leap attack.
+
+- The entity which KingSlime splits to on death is now configurable. Also now toggleable.
  
 
