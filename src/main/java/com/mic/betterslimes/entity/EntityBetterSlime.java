@@ -126,7 +126,7 @@ public class EntityBetterSlime extends EntitySlime {
 		if (this.canEntityBeSeen(entityIn) && this.getDistanceSq(entityIn) < 0.6D * (double)i * 0.6D * (double)i && entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), (float)this.getAttackStrength()))
 		{
 		    this.playSound(SoundEvents.ENTITY_SLIME_ATTACK, 1.0F, (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
-		    entityIn.attackEntityFrom( DamageSource.causeMobDamage(this), (i+1) * BetterSlimesConfig.someFloat ); // BetterSlimesConfig.someFloat is the damage multiplier add this in the config!!!
+		    entityIn.attackEntityFrom( DamageSource.causeMobDamage(this), (i+1) * ConfigHandler.damageMultiplier ); // BetterSlimesConfig.someFloat is the damage multiplier add this in the config!!!
 		    // large slime size = 4
 		    // System.out.println(this.getSlimeSize());
 		}
