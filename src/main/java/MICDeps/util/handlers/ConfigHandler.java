@@ -13,6 +13,7 @@ public class ConfigHandler {
 	private static ModBase mod;
 	private static String modID;
 	
+	public static float damageMultiplier = 2.0; // Slime Damage
 	
 	public static int blueSlime = 14;
 	public static int redSlime = 7;
@@ -28,7 +29,6 @@ public class ConfigHandler {
 	public static int goldSlime = 20;
 	public static int knightSlime = 6;
 	public static int splitChance = 50;
-
 
 	public ConfigHandler(ModBase mod, String modID) {
 		this.mod = mod;
@@ -50,6 +50,7 @@ public class ConfigHandler {
 		
 		category = "Slime Spawn Chances";
 		
+		damageMultiplier = config.getInt("Slime Damage Multiplier", category, 2.0, 0.0, 100.0, "Slime damage is multiplied by this amount.");
 		blueSlime = config.getInt("Blue Slime Spawn Chance", category, 14, 0, 100, "0 for never and 100 for always.");
 		redSlime = config.getInt("Red Slime Spawn Chance", category, 7, 0, 100, "0 for never and 100 for always.");
 		yellowSlime = config.getInt("Yellow Slime Spawn Chance", category, 4, 0, 100, "0 for never and 100 for always.");
